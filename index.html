@@ -1,387 +1,57 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>心知天气查询</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #6e8efb, #a777e3);
-            color: #333;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            color: white;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-        
-        header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-        
-        .search-box {
-            display: flex;
-            margin-bottom: 30px;
-            max-width: 500px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .search-box input {
-            flex: 1;
-            padding: 15px 20px;
-            border: none;
-            border-radius: 12px 0 0 12px;
-            background: rgba(255, 255, 255, 0.9);
-            font-size: 1rem;
-            outline: none;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .search-box button {
-            padding: 15px 25px;
-            background: #ff6b6b;
-            color: white;
-            border: none;
-            border-radius: 0 12px 12px 0;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: bold;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .search-box button:hover {
-            background: #ff5252;
-            transform: translateY(-2px);
-        }
-        
-        .weather-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-            text-align: center;
-            backdrop-filter: blur(10px);
-        }
-        
-        .city-name {
-            font-size: 2rem;
-            color: #333;
-            margin-bottom: 10px;
-        }
-        
-        .weather-info {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            margin: 30px 0;
-            flex-wrap: wrap;
-        }
-        
-        .temperature {
-            font-size: 4rem;
-            font-weight: bold;
-            color: #6e8efb;
-        }
-        
-        .weather-icon {
-            font-size: 5rem;
-            color: #a777e3;
-            margin: 20px 0;
-        }
-        
-        .weather-desc {
-            font-size: 1.5rem;
-            color: #666;
-            margin-bottom: 20px;
-        }
-        
-        .details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .detail-item {
-            background: #f8f9ff;
-            padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-        }
-        
-        .detail-item i {
-            font-size: 1.5rem;
-            color: #6e8efb;
-            margin-bottom: 8px;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            font-size: 1.2rem;
-            color: #666;
-        }
-        
-        .error {
-            text-align: center;
-            padding: 20px;
-            background: #ffe6e6;
-            border-radius: 15px;
-            color: #d32f2f;
-            margin: 20px 0;
-        }
-        
-        .recent-cities {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        
-        .city-chip {
-            background: rgba(255, 255, 255, 0.8);
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.9rem;
-        }
-        
-        .city-chip:hover {
-            background: white;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        @media (max-width: 600px) {
-            .weather-info {
-                flex-direction: column;
-            }
-            
-            .temperature {
-                font-size: 3rem;
-            }
-            
-            .weather-icon {
-                font-size: 4rem;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>天气查询</title>
+  <style>
+    /* 简单样式，可自行修改 */
+    .weather-box { max-width: 400px; margin: 50px auto; padding: 20px; border: 1px solid #eee; }
+    input { padding: 8px; width: 200px; margin-right: 10px; }
+    button { padding: 8px 16px; cursor: pointer; }
+    .result { margin-top: 20px; line-height: 1.6; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>心知天气查询</h1>
-            <p>实时天气信息，安全可靠的API保护</p>
-        </header>
-        
-        <div class="search-box">
-            <input type="text" id="city-input" placeholder="输入城市名称，如：北京、上海...">
-            <button id="search-btn"><i class="fas fa-search"></i> 查询天气</button>
-        </div>
-        
-        <div class="recent-cities" id="recent-cities">
-            <!-- 最近查询的城市将在这里显示 -->
-        </div>
-        
-        <div class="weather-card">
-            <div id="weather-content">
-                <div class="loading">
-                    <i class="fas fa-cloud-sun fa-spin fa-2x"></i>
-                    <p>请输入城市名称查询天气信息</p>
-                </div>
-            </div>
-        </div>
-    </div>
+  <div class="weather-box">
+    <h3>查询天气</h3>
+    <input type="text" id="cityInput" placeholder="输入城市（如：上海）">
+    <button onclick="getWeather()">查询</button>
+    <div class="result" id="weatherResult"></div>
+  </div>
 
-    <script>
-        // Workers代理地址 - 不暴露API密钥
-        const WORKERS_URL = 'https://zhixin.76220726.xyz/workers';
-        
-        // DOM元素
-        const cityInput = document.getElementById('city-input');
-        const searchBtn = document.getElementById('search-btn');
-        const recentCitiesContainer = document.getElementById('recent-cities');
-        const weatherContent = document.getElementById('weather-content');
-        
-        // 最近查询的城市
-        let recentCities = JSON.parse(localStorage.getItem('recentCities')) || ['北京', '上海', '广州'];
-        
-        // 初始化
-        function init() {
-            renderRecentCities();
-            
-            searchBtn.addEventListener('click', searchWeather);
-            
-            cityInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    searchWeather();
-                }
-            });
-            
-            // 默认查询第一个最近城市的天气
-            if (recentCities.length > 0) {
-                getWeatherData(recentCities[0]);
-            }
+  <script>
+    // 调用 Workers 后端接口（无需暴露私钥）
+    async function getWeather() {
+      const city = document.getElementById("cityInput").value.trim();
+      const resultDom = document.getElementById("weatherResult");
+      
+      if (!city) {
+        resultDom.innerText = "请输入城市名称！";
+        return;
+      }
+
+      try {
+        // 调用你绑定的 Workers 域名（后端已隐藏私钥）
+        const res = await fetch(`https://zhixin.76220726.xyz?city=${encodeURIComponent(city)}`);
+        const data = await res.json();
+
+        // 解析并显示天气结果（心知天气免费版返回格式）
+        if (data.results && data.results[0]) {
+          const weather = data.results[0].now;
+          const cityName = data.results[0].location.name;
+          resultDom.innerHTML = `
+            <p>城市：${cityName}</p>
+            <p>天气：${weather.text}</p>
+            <p>温度：${weather.temperature}℃</p>
+            <p>更新时间：${data.results[0].last_update}</p>
+          `;
+        } else {
+          resultDom.innerText = "未找到该城市天气数据！";
         }
-        
-        // 搜索天气
-        function searchWeather() {
-            const city = cityInput.value.trim();
-            if (city) {
-                getWeatherData(city);
-                addToRecentCities(city);
-                cityInput.value = '';
-            }
-        }
-        
-        // 获取天气数据（通过Workers代理）
-        async function getWeatherData(city) {
-            showLoading();
-            
-            try {
-                const url = `${WORKERS_URL}?location=${encodeURIComponent(city)}`;
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    throw new Error(`请求失败: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                
-                if (data.results && data.results.length > 0) {
-                    renderWeatherData(data.results[0]);
-                } else {
-                    throw new Error('未找到该城市的天气信息');
-                }
-                
-            } catch (error) {
-                showError(error.message);
-            }
-        }
-        
-        // 渲染天气数据
-        function renderWeatherData(weatherData) {
-            const { location, now } = weatherData;
-            
-            const weatherIcons = {
-                '晴': 'fa-sun',
-                '多云': 'fa-cloud',
-                '阴': 'fa-cloud',
-                '雨': 'fa-cloud-rain',
-                '雪': 'fa-snowflake',
-                '雾': 'fa-smog'
-            };
-            
-            const iconClass = weatherIcons[now.text] || 'fa-cloud-sun';
-            
-            weatherContent.innerHTML = `
-                <h2 class="city-name">${location.name}</h2>
-                <div class="weather-info">
-                    <div class="temperature">${now.temperature}°C</div>
-                    <div>
-                        <i class="fas ${iconClass} weather-icon"></i>
-                        <div class="weather-desc">${now.text}</div>
-                    </div>
-                </div>
-                <div class="details">
-                    <div class="detail-item">
-                        <i class="fas fa-wind"></i>
-                        <div>风速</div>
-                        <div class="detail-value">${now.wind_speed} km/h</div>
-                    </div>
-                    <div class="detail-item">
-                        <i class="fas fa-tint"></i>
-                        <div>湿度</div>
-                        <div class="detail-value">${now.humidity}%</div>
-                    </div>
-                    <div class="detail-item">
-                        <i class="fas fa-compress-arrows-alt"></i>
-                        <div>气压</div>
-                        <div class="detail-value">${now.pressure} hPa</div>
-                    </div>
-                    <div class="detail-item">
-                        <i class="fas fa-eye"></i>
-                        <div>能见度</div>
-                        <div class="detail-value">${now.visibility} km</div>
-                    </div>
-                </div>
-                <div style="margin-top: 20px; color: #666; font-size: 0.9rem;">
-                    <i class="fas fa-shield-alt"></i> API密钥安全保护中
-                </div>
-            `;
-        }
-        
-        // 显示加载状态
-        function showLoading() {
-            weatherContent.innerHTML = `
-                <div class="loading">
-                    <i class="fas fa-cloud-sun fa-spin fa-2x"></i>
-                    <p>正在获取天气数据...</p>
-                </div>
-            `;
-        }
-        
-        // 显示错误信息
-        function showError(message) {
-            weatherContent.innerHTML = `
-                <div class="error">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <p>${message}</p>
-                    <button onclick="getWeatherData('北京')" style="margin-top: 10px; padding: 8px 15px; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer;">尝试查询北京</button>
-                </div>
-            `;
-        }
-        
-        // 渲染最近查询的城市
-        function renderRecentCities() {
-            recentCitiesContainer.innerHTML = '';
-            recentCities.forEach(city => {
-                const chip = document.createElement('div');
-                chip.className = 'city-chip';
-                chip.textContent = city;
-                chip.addEventListener('click', () => {
-                    getWeatherData(city);
-                });
-                recentCitiesContainer.appendChild(chip);
-            });
-        }
-        
-        // 添加到最近查询城市
-        function addToRecentCities(city) {
-            if (!recentCities.includes(city)) {
-                recentCities.unshift(city);
-                // 只保留最近5个城市
-                if (recentCities.length > 5) {
-                    recentCities.pop();
-                }
-                localStorage.setItem('recentCities', JSON.stringify(recentCities));
-                renderRecentCities();
-            }
-        }
-        
-        // 初始化应用
-        init();
-    </script>
+      } catch (err) {
+        resultDom.innerText = "查询失败，请重试！";
+      }
+    }
+  </script>
 </body>
 </html>

@@ -97,6 +97,13 @@
             box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
         }
         
+        button:disabled {
+            background: #b2bec3;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
         .weather-display {
             padding: 30px;
             text-align: center;
@@ -281,29 +288,29 @@
             <h2 class="location" id="location">
                 <i class="fas fa-map-marker-alt"></i> 盐城大丰区
             </h2>
-            <p class="date" id="date">2023年10月15日 星期日</p>
+            <p class="date" id="date">--</p>
             
             <div class="current-weather">
-                <div class="temperature" id="temperature">24°C</div>
-                <div class="weather-icon" id="weather-icon">☀️</div>
+                <div class="temperature" id="temperature">--°C</div>
+                <div class="weather-icon" id="weather-icon">--</div>
             </div>
             
             <div class="weather-info">
                 <div class="info-card">
                     <div class="info-label">天气状况</div>
-                    <div class="info-value" id="weather-text">晴朗</div>
+                    <div class="info-value" id="weather-text">--</div>
                 </div>
                 <div class="info-card">
                     <div class="info-label">湿度</div>
-                    <div class="info-value" id="humidity">65%</div>
+                    <div class="info-value" id="humidity">--%</div>
                 </div>
                 <div class="info-card">
                     <div class="info-label">风速</div>
-                    <div class="info-value" id="wind-speed">12 km/h</div>
+                    <div class="info-value" id="wind-speed">-- km/h</div>
                 </div>
                 <div class="info-card">
                     <div class="info-label">风向</div>
-                    <div class="info-value" id="wind-direction">东南风</div>
+                    <div class="info-value" id="wind-direction">--</div>
                 </div>
             </div>
             
@@ -356,6 +363,7 @@
                 loading.style.display = 'block';
                 error.style.display = 'none';
                 weatherDisplay.style.display = 'none';
+                searchBtn.disabled = true;
                 
                 // 调用Worker代理获取天气数据
                 fetch(`${WORKER_URL}/weather?location=${encodeURIComponent(city)}`)
@@ -368,11 +376,13 @@
                     .then(data => {
                         // 处理API返回的数据
                         processWeatherData(data);
+                        searchBtn.disabled = false;
                     })
                     .catch(err => {
                         console.error('获取天气数据失败:', err);
-                        // 如果API调用失败，使用模拟数据
-                        useMockData(city);
+                        loading.style.display = 'none';
+                        error.style.display = 'block';
+                        searchBtn.disabled = false;
                     });
             }
             
@@ -439,81 +449,6 @@
                     const dayTemp = document.createElement('div');
                     dayTemp.className = 'day-temp';
                     dayTemp.textContent = day.low + '°/' + day.high + '°';
-                    
-                    forecastDay.appendChild(dayName);
-                    forecastDay.appendChild(dayIcon);
-                    forecastDay.appendChild(dayTemp);
-                    
-                    forecastContainer.appendChild(forecastDay);
-                }
-                
-                // 显示天气信息
-                loading.style.display = 'none';
-                weatherDisplay.style.display = 'block';
-            }
-            
-            // 使用模拟数据
-            function useMockData(city) {
-                // 更新位置
-                document.getElementById('location').innerHTML = `<i class="fas fa-map-marker-alt"></i> ${city}`;
-                
-                // 更新日期
-                const now = new Date();
-                const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-                document.getElementById('date').textContent = now.toLocaleDateString('zh-CN', options);
-                
-                // 模拟天气数据
-                const mockWeatherData = {
-                    temperature: Math.round(15 + Math.random() * 20),
-                    weatherText: ['晴朗', '多云', '小雨', '阴天'][Math.floor(Math.random() * 4)],
-                    humidity: Math.round(40 + Math.random() * 40),
-                    windSpeed: Math.round(5 + Math.random() * 20),
-                    windDirection: ['北风', '东北风', '东风', '东南风', '南风'][Math.floor(Math.random() * 5)]
-                };
-                
-                // 更新当前天气
-                document.getElementById('temperature').textContent = mockWeatherData.temperature + '°C';
-                document.getElementById('weather-text').textContent = mockWeatherData.weatherText;
-                document.getElementById('humidity').textContent = mockWeatherData.humidity + '%';
-                document.getElementById('wind-speed').textContent = mockWeatherData.windSpeed + ' km/h';
-                document.getElementById('wind-direction').textContent = mockWeatherData.windDirection;
-                
-                // 设置天气图标
-                const weatherIcon = document.getElementById('weather-icon');
-                if (mockWeatherData.weatherText.includes('晴')) {
-                    weatherIcon.textContent = '☀️';
-                } else if (mockWeatherData.weatherText.includes('云')) {
-                    weatherIcon.textContent = '⛅';
-                } else if (mockWeatherData.weatherText.includes('雨')) {
-                    weatherIcon.textContent = '🌧️';
-                } else {
-                    weatherIcon.textContent = '☁️';
-                }
-                
-                // 生成三天预报
-                const forecastContainer = document.getElementById('forecast');
-                forecastContainer.innerHTML = '';
-                
-                const days = ['明天', '后天', '大后天'];
-                const icons = ['☀️', '⛅', '🌧️', '☁️'];
-                
-                for (let i = 0; i < 3; i++) {
-                    const forecastDay = document.createElement('div');
-                    forecastDay.className = 'forecast-day';
-                    
-                    const dayName = document.createElement('div');
-                    dayName.className = 'day-name';
-                    dayName.textContent = days[i];
-                    
-                    const dayIcon = document.createElement('div');
-                    dayIcon.className = 'day-icon';
-                    dayIcon.textContent = icons[Math.floor(Math.random() * icons.length)];
-                    
-                    const dayTemp = document.createElement('div');
-                    dayTemp.className = 'day-temp';
-                    const lowTemp = Math.round(10 + Math.random() * 10);
-                    const highTemp = Math.round(lowTemp + 5 + Math.random() * 10);
-                    dayTemp.textContent = lowTemp + '°/' + highTemp + '°';
                     
                     forecastDay.appendChild(dayName);
                     forecastDay.appendChild(dayIcon);

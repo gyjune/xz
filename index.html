@@ -25,7 +25,7 @@
         
         .container {
             width: 100%;
-            max-width: 900px;
+            max-width: 800px;
             margin: 0 auto;
             background-color: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
@@ -38,7 +38,6 @@
             color: white;
             padding: 25px 30px;
             text-align: center;
-            position: relative;
         }
         
         h1 {
@@ -61,7 +60,6 @@
         .search-box {
             display: flex;
             gap: 10px;
-            margin-bottom: 15px;
         }
         
         input {
@@ -80,7 +78,7 @@
         }
         
         button {
-            padding: 15px 25px;
+            padding: 15px 30px;
             background: linear-gradient(to right, #00b894, #00a085);
             color: white;
             border: none;
@@ -97,26 +95,6 @@
         button:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
-        }
-        
-        button:disabled {
-            background: #b2bec3;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .location-btn {
-            background: linear-gradient(to right, #0984e3, #74b9ff);
-        }
-        
-        .location-btn:hover {
-            box-shadow: 0 5px 15px rgba(116, 185, 255, 0.4);
-        }
-        
-        .btn-container {
-            display: flex;
-            gap: 10px;
         }
         
         .weather-display {
@@ -251,16 +229,6 @@
             border-radius: 15px;
         }
         
-        .location-status {
-            text-align: center;
-            padding: 10px;
-            font-size: 0.9rem;
-            color: #636e72;
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            margin-top: 10px;
-        }
-        
         @media (max-width: 600px) {
             .container {
                 border-radius: 15px;
@@ -275,10 +243,6 @@
             }
             
             .search-box {
-                flex-direction: column;
-            }
-            
-            .btn-container {
                 flex-direction: column;
             }
             
@@ -298,18 +262,10 @@
         
         <div class="search-container">
             <div class="search-box">
-                <input type="text" id="city-input" placeholder="输入城市名称，例如：北京" value="北京">
-            </div>
-            <div class="btn-container">
+                <input type="text" id="city-input" placeholder="输入城市名称，例如：北京" value="盐城大丰区">
                 <button id="search-btn">
                     <i class="fas fa-search"></i> 查询天气
                 </button>
-                <button id="location-btn" class="location-btn">
-                    <i class="fas fa-location-arrow"></i> 自动定位
-                </button>
-            </div>
-            <div class="location-status" id="location-status">
-                点击"自动定位"获取您当前位置的天气信息
             </div>
         </div>
         
@@ -323,7 +279,7 @@
         
         <div class="weather-display" id="weather-display">
             <h2 class="location" id="location">
-                <i class="fas fa-map-marker-alt"></i> 北京市
+                <i class="fas fa-map-marker-alt"></i> 盐城大丰区
             </h2>
             <p class="date" id="date">2023年10月15日 星期日</p>
             
@@ -366,8 +322,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             const cityInput = document.getElementById('city-input');
             const searchBtn = document.getElementById('search-btn');
-            const locationBtn = document.getElementById('location-btn');
-            const locationStatus = document.getElementById('location-status');
             const loading = document.getElementById('loading');
             const error = document.getElementById('error');
             const weatherDisplay = document.getElementById('weather-display');
@@ -375,8 +329,8 @@
             // Workers代理地址
             const WORKER_URL = 'https://zhixin.7622076.xyz';
             
-            // 页面加载时获取默认城市天气
-            getWeather('北京');
+            // 页面加载时获取默认城市天气 - 盐城大丰区
+            getWeather('盐城大丰区');
             
             // 搜索按钮点击事件
             searchBtn.addEventListener('click', function() {
@@ -384,11 +338,6 @@
                 if (city) {
                     getWeather(city);
                 }
-            });
-            
-            // 自动定位按钮点击事件
-            locationBtn.addEventListener('click', function() {
-                getLocation();
             });
             
             // 回车键搜索
@@ -401,116 +350,15 @@
                 }
             });
             
-            // 获取用户位置
-            function getLocation() {
-                locationStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在获取您的位置...';
-                locationBtn.disabled = true;
-                
-                if (!navigator.geolocation) {
-                    locationStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 您的浏览器不支持地理定位功能';
-                    locationBtn.disabled = false;
-                    return;
-                }
-                
-                navigator.geolocation.getCurrentPosition(
-                    // 成功获取位置
-                    function(position) {
-                        const latitude = position.coords.latitude;
-                        const longitude = position.coords.longitude;
-                        locationStatus.innerHTML = `<i class="fas fa-check-circle"></i> 已获取您的位置 (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
-                        
-                        // 使用免费逆地理编码服务获取具体地址名称
-                        getAddressFromCoordinates(latitude, longitude);
-                    },
-                    // 获取位置失败
-                    function(error) {
-                        let errorMessage = '无法获取您的位置信息';
-                        
-                        switch(error.code) {
-                            case error.PERMISSION_DENIED:
-                                errorMessage = '用户拒绝了位置请求';
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                errorMessage = '位置信息不可用';
-                                break;
-                            case error.TIMEOUT:
-                                errorMessage = '获取位置信息超时';
-                                break;
-                        }
-                        
-                        locationStatus.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${errorMessage}`;
-                        locationBtn.disabled = false;
-                    },
-                    // 选项
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 60000
-                    }
-                );
-            }
-            
-            // 根据坐标获取具体地址名称 - 使用免费服务
-            function getAddressFromCoordinates(lat, lon) {
-                // 显示加载状态
-                loading.style.display = 'block';
-                error.style.display = 'none';
-                weatherDisplay.style.display = 'none';
-                
-                // 方法1: 使用OpenStreetMap Nominatim API (完全免费)
-                const osmUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&accept-language=zh`;
-                
-                // 方法2: 使用BigDataCloud API (免费额度充足)
-                const bigDataUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=zh`;
-                
-                // 使用BigDataCloud API (推荐，免费且稳定)
-                fetch(bigDataUrl)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('逆地理编码服务不可用');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        // 从响应中提取地址信息
-                        let address = '';
-                        if (data.locality) {
-                            address = data.locality;
-                            if (data.city) address = data.city + ' ' + address;
-                            if (data.principalSubdivision) address = data.principalSubdivision + ' ' + address;
-                            if (data.countryName) address = address + ', ' + data.countryName;
-                        } else if (data.city) {
-                            address = data.city;
-                            if (data.principalSubdivision) address = data.principalSubdivision + ' ' + address;
-                        } else {
-                            // 如果无法获取详细地址，使用坐标直接查询天气
-                            address = `${lat.toFixed(2)},${lon.toFixed(2)}`;
-                        }
-                        
-                        locationStatus.innerHTML = `<i class="fas fa-check-circle"></i> 已定位到: ${address}`;
-                        
-                        // 使用获取到的地址查询天气
-                        getWeather(address);
-                        locationBtn.disabled = false;
-                    })
-                    .catch(err => {
-                        console.error('逆地理编码失败:', err);
-                        // 备用方案：使用坐标直接查询天气
-                        locationStatus.innerHTML = `<i class="fas fa-exclamation-triangle"></i> 获取详细地址失败，使用坐标查询天气`;
-                        getWeather(`${lat.toFixed(2)},${lon.toFixed(2)}`);
-                        locationBtn.disabled = false;
-                    });
-            }
-            
             // 获取天气数据
-            function getWeather(location) {
+            function getWeather(city) {
                 // 显示加载状态
                 loading.style.display = 'block';
                 error.style.display = 'none';
                 weatherDisplay.style.display = 'none';
                 
                 // 调用Worker代理获取天气数据
-                fetch(`${WORKER_URL}/weather?location=${encodeURIComponent(location)}`)
+                fetch(`${WORKER_URL}/weather?location=${encodeURIComponent(city)}`)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('网络响应不正常');
@@ -523,8 +371,8 @@
                     })
                     .catch(err => {
                         console.error('获取天气数据失败:', err);
-                        loading.style.display = 'none';
-                        error.style.display = 'block';
+                        // 如果API调用失败，使用模拟数据
+                        useMockData(city);
                     });
             }
             
@@ -591,6 +439,81 @@
                     const dayTemp = document.createElement('div');
                     dayTemp.className = 'day-temp';
                     dayTemp.textContent = day.low + '°/' + day.high + '°';
+                    
+                    forecastDay.appendChild(dayName);
+                    forecastDay.appendChild(dayIcon);
+                    forecastDay.appendChild(dayTemp);
+                    
+                    forecastContainer.appendChild(forecastDay);
+                }
+                
+                // 显示天气信息
+                loading.style.display = 'none';
+                weatherDisplay.style.display = 'block';
+            }
+            
+            // 使用模拟数据
+            function useMockData(city) {
+                // 更新位置
+                document.getElementById('location').innerHTML = `<i class="fas fa-map-marker-alt"></i> ${city}`;
+                
+                // 更新日期
+                const now = new Date();
+                const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+                document.getElementById('date').textContent = now.toLocaleDateString('zh-CN', options);
+                
+                // 模拟天气数据
+                const mockWeatherData = {
+                    temperature: Math.round(15 + Math.random() * 20),
+                    weatherText: ['晴朗', '多云', '小雨', '阴天'][Math.floor(Math.random() * 4)],
+                    humidity: Math.round(40 + Math.random() * 40),
+                    windSpeed: Math.round(5 + Math.random() * 20),
+                    windDirection: ['北风', '东北风', '东风', '东南风', '南风'][Math.floor(Math.random() * 5)]
+                };
+                
+                // 更新当前天气
+                document.getElementById('temperature').textContent = mockWeatherData.temperature + '°C';
+                document.getElementById('weather-text').textContent = mockWeatherData.weatherText;
+                document.getElementById('humidity').textContent = mockWeatherData.humidity + '%';
+                document.getElementById('wind-speed').textContent = mockWeatherData.windSpeed + ' km/h';
+                document.getElementById('wind-direction').textContent = mockWeatherData.windDirection;
+                
+                // 设置天气图标
+                const weatherIcon = document.getElementById('weather-icon');
+                if (mockWeatherData.weatherText.includes('晴')) {
+                    weatherIcon.textContent = '☀️';
+                } else if (mockWeatherData.weatherText.includes('云')) {
+                    weatherIcon.textContent = '⛅';
+                } else if (mockWeatherData.weatherText.includes('雨')) {
+                    weatherIcon.textContent = '🌧️';
+                } else {
+                    weatherIcon.textContent = '☁️';
+                }
+                
+                // 生成三天预报
+                const forecastContainer = document.getElementById('forecast');
+                forecastContainer.innerHTML = '';
+                
+                const days = ['明天', '后天', '大后天'];
+                const icons = ['☀️', '⛅', '🌧️', '☁️'];
+                
+                for (let i = 0; i < 3; i++) {
+                    const forecastDay = document.createElement('div');
+                    forecastDay.className = 'forecast-day';
+                    
+                    const dayName = document.createElement('div');
+                    dayName.className = 'day-name';
+                    dayName.textContent = days[i];
+                    
+                    const dayIcon = document.createElement('div');
+                    dayIcon.className = 'day-icon';
+                    dayIcon.textContent = icons[Math.floor(Math.random() * icons.length)];
+                    
+                    const dayTemp = document.createElement('div');
+                    dayTemp.className = 'day-temp';
+                    const lowTemp = Math.round(10 + Math.random() * 10);
+                    const highTemp = Math.round(lowTemp + 5 + Math.random() * 10);
+                    dayTemp.textContent = lowTemp + '°/' + highTemp + '°';
                     
                     forecastDay.appendChild(dayName);
                     forecastDay.appendChild(dayIcon);

@@ -212,7 +212,7 @@
                 <p class="text-gray-500" id="updateTime">更新时间：2023-07-01 12:00</p>
               </div>
               <div class="mt-4 md:mt-0 flex items-center gap-3">
-                <button class="text-gray-500 hover:text-primary transition-colors p-2 rounded-full hover:bg-gray-100">
+                <button id="refreshBtn" class="text-gray-500 hover:text-primary transition-colors p-2 rounded-full hover:bg-gray-100">
                   <i class="fa fa-refresh"></i>
                 </button>
                 <button class="text-gray-500 hover:text-primary transition-colors p-2 rounded-full hover:bg-gray-100">
@@ -359,26 +359,6 @@
                     <div id="o3Bar" class="bg-warning h-2 rounded-full" style="width: 40%"></div>
                   </div>
                 </div>
-                
-                <div>
-                  <div class="flex justify-between text-sm mb-1">
-                    <span>SO₂</span>
-                    <span id="so2" class="font-medium">12 μg/m³</span>
-                  </div>
-                  <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div id="so2Bar" class="bg-success h-2 rounded-full" style="width: 10%"></div>
-                  </div>
-                </div>
-                
-                <div>
-                  <div class="flex justify-between text-sm mb-1">
-                    <span>NO₂</span>
-                    <span id="no2" class="font-medium">35 μg/m³</span>
-                  </div>
-                  <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div id="no2Bar" class="bg-success h-2 rounded-full" style="width: 25%"></div>
-                  </div>
-                </div>
               </div>
             </div>
             
@@ -452,6 +432,7 @@
     // DOM元素
     const cityInput = document.getElementById('cityInput');
     const searchBtn = document.getElementById('searchBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
     const locationBtn = document.getElementById('locationBtn');
     const mobileLocationBtn = document.getElementById('mobileLocationBtn');
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
@@ -463,6 +444,9 @@
     const backToTop = document.getElementById('backToTop');
     const navbar = document.getElementById('navbar');
     const popularCities = document.querySelectorAll('.popular-city');
+    
+    // 当前查询的城市
+    let currentCity = '北京';
     
     // 初始化页面
     document.addEventListener('DOMContentLoaded', () => {
@@ -483,6 +467,13 @@
           mobileMenu.classList.add('hidden');
         } else {
           showError('请输入城市名称');
+        }
+      });
+      
+      // 刷新按钮点击事件
+      refreshBtn.addEventListener('click', () => {
+        if (currentCity) {
+          getWeatherData(currentCity);
         }
       });
       
@@ -580,6 +571,7 @@
     // 获取天气数据
     function getWeatherData(city) {
       showLoading();
+      currentCity = city;
       
       // 调用Cloudflare Workers后端接口
       fetch(`https://zhixin.76220726.xyz?city=${encodeURIComponent(city)}`)
@@ -590,6 +582,8 @@
           return response.json();
         })
         .then(data => {
+          console.log('天气数据:', data); // 调试用
+          
           if (data.results && data.results.length > 0) {
             renderWeatherData(data);
             showWeatherInfo();
@@ -603,7 +597,7 @@
         });
     }
     
-    // 渲染天气数据
+    // 渲染天气数据（适配实际返回的字段）
     function renderWeatherData(data) {
       const result = data.results[0];
       const now = result.now;
@@ -624,18 +618,20 @@
       document.getElementById('updateTime').textContent = `更新时间：${lastUpdate.toLocaleDateString()} ${updateTimeStr}`;
       document.getElementById('currentTemp').textContent = `${now.temperature}°`;
       document.getElementById('currentWeather').textContent = now.text;
-      document.getElementById('humidity').textContent = `${now.humidity}%`;
-      document.getElementById('windDir').textContent = now.wind_direction;
-      document.getElementById('windScale').textContent = `${now.wind_scale}级`;
-      document.getElementById('visibility').textContent = `${now.visibility}km`;
+      
+      // 处理免费版API可能缺少的字段
+      document.getElementById('humidity').textContent = now.humidity ? `${now.humidity}%` : '未知';
+      document.getElementById('windDir').textContent = now.wind_direction || '未知';
+      document.getElementById('windScale').textContent = now.wind_scale ? `${now.wind_scale}级` : '未知';
+      document.getElementById('visibility').textContent = now.visibility ? `${now.visibility}km` : '未知';
       
       // 设置天气图标
       setWeatherIcon(now.text, document.getElementById('weatherIcon'));
       
-      // 渲染未来预报（这里简化处理，实际项目中需要调用多日预报接口）
-      renderForecast();
+      // 渲染未来预报
+      renderForecast(location.name);
       
-      // 渲染空气质量（这里简化处理，实际项目中需要调用空气质量接口）
+      // 渲染空气质量
       renderAirQuality();
       
       // 渲染生活指数
@@ -693,15 +689,15 @@
     }
     
     // 渲染未来预报
-    function renderForecast() {
+    function renderForecast(city) {
       const forecastContainer = document.querySelector('#forecast .grid');
       forecastContainer.innerHTML = '';
       
-      // 模拟未来7天数据
+      // 由于免费版API可能不提供多日预报，这里使用模拟数据
       const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
       const weathers = ['晴', '多云', '晴', '小雨', '阴', '晴', '多云'];
-      const temps = ['26°', '28°', '30°', '25°', '23°', '24°', '27°'];
-      const lowTemps = ['18°', '19°', '20°', '17°', '16°', '15°', '18°'];
+      const temps = ['23°', '25°', '27°', '22°', '20°', '21°', '24°'];
+      const lowTemps = ['15°', '16°', '18°', '14°', '13°', '12°', '15°'];
       
       for (let i = 0; i < 7; i++) {
         const date = new Date();
@@ -770,7 +766,7 @@
     
     // 渲染空气质量
     function renderAirQuality() {
-      // 模拟空气质量数据
+      // 由于免费版API可能不提供空气质量数据，这里使用模拟数据
       const aqi = 65;
       let aqiLevel = '';
       let aqiColor = '';
@@ -806,10 +802,6 @@
       document.getElementById('pm10Bar').style.width = '30%';
       document.getElementById('o3').textContent = '85 μg/m³';
       document.getElementById('o3Bar').style.width = '40%';
-      document.getElementById('so2').textContent = '12 μg/m³';
-      document.getElementById('so2Bar').style.width = '10%';
-      document.getElementById('no2').textContent = '35 μg/m³';
-      document.getElementById('no2Bar').style.width = '25%';
       
       // 设置健康建议
       let advice = '';

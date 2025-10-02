@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>天气预报</title>
+    <title>天气预报 - 心知天气数据</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -419,8 +419,8 @@
                         const longitude = position.coords.longitude;
                         locationStatus.innerHTML = `<i class="fas fa-check-circle"></i> 已获取您的位置 (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
                         
-                        // 使用逆地理编码获取城市名称
-                        getCityFromCoordinates(latitude, longitude);
+                        // 使用免费逆地理编码服务获取具体地址名称
+                        getAddressFromCoordinates(latitude, longitude);
                     },
                     // 获取位置失败
                     function(error) {
@@ -450,46 +450,67 @@
                 );
             }
             
-            // 根据坐标获取城市名称
-            function getCityFromCoordinates(lat, lon) {
-                // 在实际应用中，这里应该调用逆地理编码API
-                // 由于心知天气API支持直接使用经纬度查询天气，这里我们直接使用坐标
-                
+            // 根据坐标获取具体地址名称 - 使用免费服务
+            function getAddressFromCoordinates(lat, lon) {
                 // 显示加载状态
                 loading.style.display = 'block';
                 error.style.display = 'none';
                 weatherDisplay.style.display = 'none';
                 
-                // 调用Worker代理获取天气数据
-                fetch(`${WORKER_URL}/weather?location=${lat},${lon}`)
+                // 方法1: 使用OpenStreetMap Nominatim API (完全免费)
+                const osmUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&accept-language=zh`;
+                
+                // 方法2: 使用BigDataCloud API (免费额度充足)
+                const bigDataUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=zh`;
+                
+                // 使用BigDataCloud API (推荐，免费且稳定)
+                fetch(bigDataUrl)
                     .then(response => {
                         if (!response.ok) {
-                            throw new Error('网络响应不正常');
+                            throw new Error('逆地理编码服务不可用');
                         }
                         return response.json();
                     })
                     .then(data => {
-                        // 处理API返回的数据
-                        processWeatherData(data, true);
+                        // 从响应中提取地址信息
+                        let address = '';
+                        if (data.locality) {
+                            address = data.locality;
+                            if (data.city) address = data.city + ' ' + address;
+                            if (data.principalSubdivision) address = data.principalSubdivision + ' ' + address;
+                            if (data.countryName) address = address + ', ' + data.countryName;
+                        } else if (data.city) {
+                            address = data.city;
+                            if (data.principalSubdivision) address = data.principalSubdivision + ' ' + address;
+                        } else {
+                            // 如果无法获取详细地址，使用坐标直接查询天气
+                            address = `${lat.toFixed(2)},${lon.toFixed(2)}`;
+                        }
+                        
+                        locationStatus.innerHTML = `<i class="fas fa-check-circle"></i> 已定位到: ${address}`;
+                        
+                        // 使用获取到的地址查询天气
+                        getWeather(address);
                         locationBtn.disabled = false;
                     })
                     .catch(err => {
-                        console.error('获取天气数据失败:', err);
-                        loading.style.display = 'none';
-                        error.style.display = 'block';
+                        console.error('逆地理编码失败:', err);
+                        // 备用方案：使用坐标直接查询天气
+                        locationStatus.innerHTML = `<i class="fas fa-exclamation-triangle"></i> 获取详细地址失败，使用坐标查询天气`;
+                        getWeather(`${lat.toFixed(2)},${lon.toFixed(2)}`);
                         locationBtn.disabled = false;
                     });
             }
             
             // 获取天气数据
-            function getWeather(city) {
+            function getWeather(location) {
                 // 显示加载状态
                 loading.style.display = 'block';
                 error.style.display = 'none';
                 weatherDisplay.style.display = 'none';
                 
                 // 调用Worker代理获取天气数据
-                fetch(`${WORKER_URL}/weather?location=${encodeURIComponent(city)}`)
+                fetch(`${WORKER_URL}/weather?location=${encodeURIComponent(location)}`)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('网络响应不正常');
@@ -508,7 +529,7 @@
             }
             
             // 处理天气数据
-            function processWeatherData(data, isLocationBased = false) {
+            function processWeatherData(data) {
                 // 检查API返回的数据结构
                 if (!data || !data.results || data.results.length === 0) {
                     throw new Error('天气数据格式错误');
@@ -522,10 +543,6 @@
                 // 更新位置
                 const locationElement = document.getElementById('location');
                 locationElement.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${location.name}`;
-                
-                if (isLocationBased) {
-                    locationElement.innerHTML += ' <span style="font-size: 0.8rem; color: #74b9ff;">(自动定位)</span>';
-                }
                 
                 // 更新日期
                 const nowDate = new Date();

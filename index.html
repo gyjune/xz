@@ -236,6 +236,17 @@
             border-radius: 15px;
         }
         
+        .debug-info {
+            display: none;
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: #636e72;
+            text-align: left;
+        }
+        
         @media (max-width: 600px) {
             .container {
                 border-radius: 15px;
@@ -274,6 +285,16 @@
                     <i class="fas fa-search"></i> 查询天气
                 </button>
             </div>
+            <button id="debug-btn" style="background: #6c5ce7; margin-top: 10px;">
+                <i class="fas fa-bug"></i> 调试信息
+            </button>
+        </div>
+        
+        <div class="debug-info" id="debug-info">
+            <strong>调试信息：</strong><br>
+            Worker URL: <span id="debug-url">-</span><br>
+            请求状态: <span id="debug-status">-</span><br>
+            响应数据: <span id="debug-data">-</span>
         </div>
         
         <div class="loading" id="loading">
@@ -329,12 +350,19 @@
         document.addEventListener('DOMContentLoaded', function() {
             const cityInput = document.getElementById('city-input');
             const searchBtn = document.getElementById('search-btn');
+            const debugBtn = document.getElementById('debug-btn');
+            const debugInfo = document.getElementById('debug-info');
             const loading = document.getElementById('loading');
             const error = document.getElementById('error');
             const weatherDisplay = document.getElementById('weather-display');
             
             // Workers代理地址
             const WORKER_URL = 'https://zhixin.7622076.xyz';
+            
+            // 调试按钮
+            debugBtn.addEventListener('click', function() {
+                debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+            });
             
             // 页面加载时获取默认城市天气 - 盐城大丰区
             getWeather('盐城大丰区');
@@ -365,21 +393,38 @@
                 weatherDisplay.style.display = 'none';
                 searchBtn.disabled = true;
                 
+                const requestUrl = `${WORKER_URL}/weather?location=${encodeURIComponent(city)}`;
+                
+                // 更新调试信息
+                document.getElementById('debug-url').textContent = requestUrl;
+                document.getElementById('debug-status').textContent = '请求中...';
+                document.getElementById('debug-data').textContent = '-';
+                
+                console.log('请求URL:', requestUrl);
+                
                 // 调用Worker代理获取天气数据
-                fetch(`${WORKER_URL}/weather?location=${encodeURIComponent(city)}`)
+                fetch(requestUrl)
                     .then(response => {
+                        console.log('响应状态:', response.status, response.statusText);
+                        document.getElementById('debug-status').textContent = `状态: ${response.status} ${response.statusText}`;
+                        
                         if (!response.ok) {
-                            throw new Error('网络响应不正常');
+                            throw new Error(`HTTP错误: ${response.status}`);
                         }
                         return response.json();
                     })
                     .then(data => {
+                        console.log('响应数据:', data);
+                        document.getElementById('debug-data').textContent = JSON.stringify(data).substring(0, 200) + '...';
+                        
                         // 处理API返回的数据
                         processWeatherData(data);
                         searchBtn.disabled = false;
                     })
                     .catch(err => {
                         console.error('获取天气数据失败:', err);
+                        document.getElementById('debug-status').textContent = `错误: ${err.message}`;
+                        
                         loading.style.display = 'none';
                         error.style.display = 'block';
                         searchBtn.disabled = false;
@@ -390,13 +435,19 @@
             function processWeatherData(data) {
                 // 检查API返回的数据结构
                 if (!data || !data.results || data.results.length === 0) {
-                    throw new Error('天气数据格式错误');
+                    throw new Error('天气数据格式错误或为空');
                 }
                 
                 const weatherData = data.results[0];
+                
+                // 检查必要字段是否存在
+                if (!weatherData.location || !weatherData.now) {
+                    throw new Error('天气数据缺少必要字段');
+                }
+                
                 const location = weatherData.location;
                 const now = weatherData.now;
-                const daily = weatherData.daily;
+                const daily = weatherData.daily || [];
                 
                 // 更新位置
                 const locationElement = document.getElementById('location');
@@ -408,11 +459,11 @@
                 document.getElementById('date').textContent = nowDate.toLocaleDateString('zh-CN', options);
                 
                 // 更新当前天气
-                document.getElementById('temperature').textContent = now.temperature + '°C';
-                document.getElementById('weather-text').textContent = now.text;
-                document.getElementById('humidity').textContent = now.humidity + '%';
-                document.getElementById('wind-speed').textContent = now.wind_speed + ' km/h';
-                document.getElementById('wind-direction').textContent = now.wind_direction;
+                document.getElementById('temperature').textContent = (now.temperature || '--') + '°C';
+                document.getElementById('weather-text').textContent = now.text || '--';
+                document.getElementById('humidity').textContent = (now.humidity || '--') + '%';
+                document.getElementById('wind-speed').textContent = (now.wind_speed || '--') + ' km/h';
+                document.getElementById('wind-direction').textContent = now.wind_direction || '--';
                 
                 // 设置天气图标
                 const weatherIcon = document.getElementById('weather-icon');
@@ -423,38 +474,42 @@
                 const forecastContainer = document.getElementById('forecast');
                 forecastContainer.innerHTML = '';
                 
-                // 使用API返回的预报数据
-                for (let i = 0; i < Math.min(3, daily.length); i++) {
-                    const day = daily[i];
-                    const forecastDay = document.createElement('div');
-                    forecastDay.className = 'forecast-day';
-                    
-                    const dayName = document.createElement('div');
-                    dayName.className = 'day-name';
-                    
-                    // 设置日期名称
-                    if (i === 0) {
-                        dayName.textContent = '明天';
-                    } else if (i === 1) {
-                        dayName.textContent = '后天';
-                    } else {
-                        const date = new Date(day.date);
-                        dayName.textContent = date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+                if (daily.length > 0) {
+                    // 使用API返回的预报数据
+                    for (let i = 0; i < Math.min(3, daily.length); i++) {
+                        const day = daily[i];
+                        const forecastDay = document.createElement('div');
+                        forecastDay.className = 'forecast-day';
+                        
+                        const dayName = document.createElement('div');
+                        dayName.className = 'day-name';
+                        
+                        // 设置日期名称
+                        if (i === 0) {
+                            dayName.textContent = '明天';
+                        } else if (i === 1) {
+                            dayName.textContent = '后天';
+                        } else {
+                            const date = new Date(day.date);
+                            dayName.textContent = date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+                        }
+                        
+                        const dayIcon = document.createElement('div');
+                        dayIcon.className = 'day-icon';
+                        dayIcon.textContent = getWeatherIcon(day.code_day);
+                        
+                        const dayTemp = document.createElement('div');
+                        dayTemp.className = 'day-temp';
+                        dayTemp.textContent = (day.low || '--') + '°/' + (day.high || '--') + '°';
+                        
+                        forecastDay.appendChild(dayName);
+                        forecastDay.appendChild(dayIcon);
+                        forecastDay.appendChild(dayTemp);
+                        
+                        forecastContainer.appendChild(forecastDay);
                     }
-                    
-                    const dayIcon = document.createElement('div');
-                    dayIcon.className = 'day-icon';
-                    dayIcon.textContent = getWeatherIcon(day.code_day);
-                    
-                    const dayTemp = document.createElement('div');
-                    dayTemp.className = 'day-temp';
-                    dayTemp.textContent = day.low + '°/' + day.high + '°';
-                    
-                    forecastDay.appendChild(dayName);
-                    forecastDay.appendChild(dayIcon);
-                    forecastDay.appendChild(dayTemp);
-                    
-                    forecastContainer.appendChild(forecastDay);
+                } else {
+                    forecastContainer.innerHTML = '<div style="grid-column: 1/-1; color: #636e72;">暂无预报数据</div>';
                 }
                 
                 // 显示天气信息

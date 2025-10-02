@@ -1,417 +1,882 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>天气查询应用</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: #fff;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 500px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            text-align: center;
-        }
-
-        h1 {
-            margin-bottom: 10px;
-            font-weight: 600;
-            font-size: 2.2rem;
-        }
-
-        .subtitle {
-            margin-bottom: 30px;
-            opacity: 0.8;
-        }
-
-        .search-container {
-            display: flex;
-            margin-bottom: 30px;
-        }
-
-        input {
-            flex: 1;
-            padding: 15px 20px;
-            border: none;
-            border-radius: 50px 0 0 50px;
-            font-size: 1rem;
-            background: rgba(255, 255, 255, 0.9);
-            outline: none;
-        }
-
-        button {
-            padding: 15px 25px;
-            border: none;
-            border-radius: 0 50px 50px 0;
-            background: #ff7e5f;
-            color: white;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        button:hover {
-            background: #ff6b4a;
-            transform: translateY(-2px);
-        }
-
-        .weather-card {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 15px;
-            padding: 25px;
-            margin-top: 20px;
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .location {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .location i {
-            margin-right: 10px;
-            color: #ffd166;
-        }
-
-        .date {
-            margin-bottom: 20px;
-            opacity: 0.8;
-        }
-
-        .temperature {
-            font-size: 4rem;
-            font-weight: 700;
-            margin: 20px 0;
-        }
-
-        .weather-icon {
-            font-size: 5rem;
-            margin: 15px 0;
-        }
-
-        .description {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            text-transform: capitalize;
-        }
-
-        .details {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .detail-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .detail-item i {
-            font-size: 1.5rem;
-            margin-bottom: 8px;
-            color: #a3d9ff;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .loading-spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 4px solid #fff;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-
-        .error {
-            display: none;
-            background: rgba(255, 100, 100, 0.2);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .footer {
-            margin-top: 30px;
-            font-size: 0.9rem;
-            opacity: 0.7;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-            
-            h1 {
-                font-size: 1.8rem;
-            }
-            
-            .temperature {
-                font-size: 3.5rem;
-            }
-            
-            .weather-icon {
-                font-size: 4rem;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>天气预报 | 实时天气查询</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义主题 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#36BFFA',
+            accent: '#FF7D00',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F',
+            dark: '#1D2129',
+            light: '#F2F3F5'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .bg-gradient-weather {
+        background: linear-gradient(135deg, #165DFF 0%, #36BFFA 100%);
+      }
+      .card-hover {
+        transition: all 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+    }
+  </style>
+  
+  <style>
+    /* 基础动画 */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-fadeIn {
+      animation: fadeIn 0.5s ease forwards;
+    }
+    
+    .weather-icon {
+      filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06));
+    }
+    
+    /* 滚动条美化 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a1a1a1;
+    }
+  </style>
 </head>
-<body>
-    <div class="container">
-        <h1><i class="fas fa-cloud-sun"></i> 天气查询</h1>
-        <p class="subtitle">实时获取全球城市天气信息</p>
-        
-        <div class="search-container">
-            <input type="text" id="city-input" placeholder="输入城市名称，如：北京" value="北京">
-            <button id="search-btn"><i class="fas fa-search"></i> 查询</button>
-        </div>
-        
-        <div class="loading" id="loading">
-            <div class="loading-spinner"></div>
-            <p>正在获取天气数据...</p>
-        </div>
-        
-        <div class="error" id="error"></div>
-        
-        <div class="weather-card" id="weather-card">
-            <div class="location">
-                <i class="fas fa-map-marker-alt"></i>
-                <span id="location-name">北京市</span>
-            </div>
-            <div class="date" id="current-date">2023年11月15日 星期三</div>
-            
-            <div class="weather-icon" id="weather-icon">
-                <i class="fas fa-sun"></i>
-            </div>
-            
-            <div class="temperature">
-                <span id="temperature">23</span>°C
-            </div>
-            
-            <div class="description" id="weather-description">晴朗</div>
-            
-            <div class="details">
-                <div class="detail-item">
-                    <i class="fas fa-temperature-high"></i>
-                    <span>体感温度</span>
-                    <span id="feels-like">25°C</span>
-                </div>
-                <div class="detail-item">
-                    <i class="fas fa-tint"></i>
-                    <span>湿度</span>
-                    <span id="humidity">45%</span>
-                </div>
-                <div class="detail-item">
-                    <i class="fas fa-wind"></i>
-                    <span>风速</span>
-                    <span id="wind-speed">5 km/h</span>
-                </div>
-                <div class="detail-item">
-                    <i class="fas fa-compress-alt"></i>
-                    <span>气压</span>
-                    <span id="pressure">1013 hPa</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="footer">
-            <p>数据由 心知天气 API 提供</p>
-            <p>后端服务: zhixin.76220726.xyz</p>
-        </div>
-    </div>
 
-    <script>
-        // DOM元素
-        const cityInput = document.getElementById('city-input');
-        const searchBtn = document.getElementById('search-btn');
-        const loading = document.getElementById('loading');
-        const error = document.getElementById('error');
-        const weatherCard = document.getElementById('weather-card');
+<body class="font-inter bg-gray-50 text-dark min-h-screen">
+  <!-- 导航栏 -->
+  <nav class="bg-white shadow-md fixed w-full z-50 transition-all duration-300" id="navbar">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <i class="fa fa-cloud text-primary text-2xl"></i>
+        <span class="text-xl font-bold text-primary">天气查询</span>
+      </div>
+      
+      <div class="hidden md:flex items-center space-x-6">
+        <a href="#" class="text-gray-700 hover:text-primary transition-colors">首页</a>
+        <a href="#forecast" class="text-gray-700 hover:text-primary transition-colors">预报</a>
+        <a href="#air" class="text-gray-700 hover:text-primary transition-colors">空气质量</a>
+        <button id="locationBtn" class="flex items-center space-x-1 text-gray-700 hover:text-primary transition-colors">
+          <i class="fa fa-map-marker"></i>
+          <span>定位</span>
+        </button>
+      </div>
+      
+      <button class="md:hidden text-gray-700" id="mobileMenuBtn">
+        <i class="fa fa-bars text-xl"></i>
+      </button>
+    </div>
+    
+    <!-- 移动端菜单 -->
+    <div class="md:hidden hidden bg-white border-t animate-fadeIn" id="mobileMenu">
+      <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+        <a href="#" class="py-2 text-gray-700 hover:text-primary transition-colors">首页</a>
+        <a href="#forecast" class="py-2 text-gray-700 hover:text-primary transition-colors">预报</a>
+        <a href="#air" class="py-2 text-gray-700 hover:text-primary transition-colors">空气质量</a>
+        <button id="mobileLocationBtn" class="flex items-center space-x-1 py-2 text-gray-700 hover:text-primary transition-colors">
+          <i class="fa fa-map-marker"></i>
+          <span>定位当前城市</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 主内容区 -->
+  <main class="container mx-auto px-4 pt-24 pb-16">
+    <!-- 搜索区域 -->
+    <section class="max-w-3xl mx-auto mb-10 animate-fadeIn" style="animation-delay: 0.1s">
+      <div class="bg-gradient-weather rounded-2xl shadow-xl p-6 md:p-8">
+        <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-white text-center mb-6 text-shadow">
+          实时天气查询
+        </h1>
         
-        // 天气显示元素
-        const locationName = document.getElementById('location-name');
-        const currentDate = document.getElementById('current-date');
-        const weatherIcon = document.getElementById('weather-icon');
-        const temperature = document.getElementById('temperature');
-        const weatherDescription = document.getElementById('weather-description');
-        const feelsLike = document.getElementById('feels-like');
-        const humidity = document.getElementById('humidity');
-        const windSpeed = document.getElementById('wind-speed');
-        const pressure = document.getElementById('pressure');
+        <div class="flex flex-col sm:flex-row gap-3">
+          <div class="relative flex-grow">
+            <i class="fa fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input 
+              type="text" 
+              id="cityInput" 
+              placeholder="输入城市名称..." 
+              class="w-full pl-10 pr-4 py-3 rounded-lg border-0 focus:ring-2 focus:ring-white/50 outline-none shadow-inner text-gray-800"
+            >
+          </div>
+          <button 
+            id="searchBtn" 
+            class="bg-white text-primary hover:bg-gray-100 transition-colors font-medium py-3 px-6 rounded-lg shadow-md flex items-center justify-center gap-2"
+          >
+            <i class="fa fa-search"></i>
+            <span>查询</span>
+          </button>
+        </div>
         
-        // 初始化日期显示
-        function updateDate() {
-            const now = new Date();
-            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-            currentDate.textContent = now.toLocaleDateString('zh-CN', options);
-        }
-        
-        // 获取天气数据
-        async function getWeather(city) {
-            // 显示加载状态
-            loading.style.display = 'block';
-            error.style.display = 'none';
-            weatherCard.style.display = 'none';
+        <div class="mt-6 flex flex-wrap gap-2">
+          <span class="text-white/80 text-sm">热门城市:</span>
+          <button class="popular-city text-white/90 hover:text-white text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full transition-colors">
+            北京
+          </button>
+          <button class="popular-city text-white/90 hover:text-white text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full transition-colors">
+            上海
+          </button>
+          <button class="popular-city text-white/90 hover:text-white text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full transition-colors">
+            广州
+          </button>
+          <button class="popular-city text-white/90 hover:text-white text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full transition-colors">
+            深圳
+          </button>
+          <button class="popular-city text-white/90 hover:text-white text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full transition-colors">
+            杭州
+          </button>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 加载状态 -->
+    <div id="loading" class="hidden flex justify-center items-center py-16">
+      <div class="flex flex-col items-center">
+        <div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-4 text-gray-600">正在获取天气数据...</p>
+      </div>
+    </div>
+    
+    <!-- 错误提示 -->
+    <div id="error" class="hidden max-w-3xl mx-auto bg-red-50 border border-red-200 rounded-lg p-6 mb-10">
+      <div class="flex items-start">
+        <i class="fa fa-exclamation-circle text-danger text-xl mt-0.5 mr-3"></i>
+        <div>
+          <h3 class="font-medium text-danger">获取天气失败</h3>
+          <p class="text-red-600 text-sm mt-1" id="errorMessage">请检查城市名称是否正确，或稍后重试</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 天气信息区域 -->
+    <div id="weatherInfo" class="hidden">
+      <!-- 当前天气概览 -->
+      <section class="max-w-5xl mx-auto mb-10 animate-fadeIn" style="animation-delay: 0.2s">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div class="p-6 md:p-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+              <div>
+                <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-bold flex items-center gap-2">
+                  <span id="currentCity">北京</span>
+                  <span class="text-sm font-normal text-gray-500" id="currentDate"></span>
+                </h2>
+                <p class="text-gray-500" id="updateTime">更新时间：2023-07-01 12:00</p>
+              </div>
+              <div class="mt-4 md:mt-0 flex items-center gap-3">
+                <button class="text-gray-500 hover:text-primary transition-colors p-2 rounded-full hover:bg-gray-100">
+                  <i class="fa fa-refresh"></i>
+                </button>
+                <button class="text-gray-500 hover:text-primary transition-colors p-2 rounded-full hover:bg-gray-100">
+                  <i class="fa fa-star-o"></i>
+                </button>
+              </div>
+            </div>
             
-            try {
-                // 调用您的Cloudflare Workers后端
-                const response = await fetch(`https://zhixin.76220726.xyz/?city=${encodeURIComponent(city)}`);
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div class="flex flex-col items-center justify-center">
+                <div class="flex items-end gap-4 mb-2">
+                  <span id="currentTemp" class="text-[clamp(3rem,8vw,5rem)] font-bold leading-none">26°</span>
+                  <div class="mb-4">
+                    <span id="currentWeather" class="text-xl font-medium">晴</span>
+                    <div class="flex items-center gap-1 mt-1 text-gray-500">
+                      <i class="fa fa-thermometer-half"></i>
+                      <span id="tempRange">18° ~ 30°</span>
+                    </div>
+                  </div>
+                </div>
+                <div id="weatherIcon" class="w-24 h-24 weather-icon">
+                  <i class="fa fa-sun-o text-6xl text-accent"></i>
+                </div>
+              </div>
+              
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-light rounded-xl p-4 flex flex-col items-center justify-center text-center card-hover">
+                  <i class="fa fa-tint text-primary text-xl mb-2"></i>
+                  <span class="text-gray-500 text-sm">湿度</span>
+                  <span id="humidity" class="text-lg font-semibold">58%</span>
+                </div>
+                <div class="bg-light rounded-xl p-4 flex flex-col items-center justify-center text-center card-hover">
+                  <i class="fa fa-location-arrow text-primary text-xl mb-2"></i>
+                  <span class="text-gray-500 text-sm">风向</span>
+                  <span id="windDir" class="text-lg font-semibold">东北风</span>
+                </div>
+                <div class="bg-light rounded-xl p-4 flex flex-col items-center justify-center text-center card-hover">
+                  <i class="fa fa-wind text-primary text-xl mb-2"></i>
+                  <span class="text-gray-500 text-sm">风力</span>
+                  <span id="windScale" class="text-lg font-semibold">3级</span>
+                </div>
+                <div class="bg-light rounded-xl p-4 flex flex-col items-center justify-center text-center card-hover">
+                  <i class="fa fa-eye text-primary text-xl mb-2"></i>
+                  <span class="text-gray-500 text-sm">能见度</span>
+                  <span id="visibility" class="text-lg font-semibold">10km</span>
+                </div>
+              </div>
+              
+              <div class="flex flex-col justify-center">
+                <div class="bg-light rounded-xl p-4 mb-4">
+                  <h3 class="text-gray-500 text-sm mb-2">日出日落</h3>
+                  <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                      <i class="fa fa-sun-o text-accent"></i>
+                      <span id="sunrise">05:23</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <i class="fa fa-moon-o text-gray-600"></i>
+                      <span id="sunset">19:45</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="bg-light rounded-xl p-4">
+                  <h3 class="text-gray-500 text-sm mb-2">生活指数</h3>
+                  <div class="grid grid-cols-2 gap-2">
+                    <div class="flex items-center gap-2">
+                      <i class="fa fa-umbrella text-primary text-sm"></i>
+                      <span id="uvIndex" class="text-sm">紫外线：中等</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <i class="fa fa-leaf text-success text-sm"></i>
+                      <span id="airQuality" class="text-sm">空气质量：良好</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 未来预报 -->
+      <section id="forecast" class="max-w-5xl mx-auto mb-10 animate-fadeIn" style="animation-delay: 0.3s">
+        <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+          <i class="fa fa-calendar text-primary"></i>
+          未来天气预报
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
+          <!-- 预报卡片会通过JS动态生成 -->
+        </div>
+      </section>
+      
+      <!-- 空气质量 -->
+      <section id="air" class="max-w-5xl mx-auto mb-10 animate-fadeIn" style="animation-delay: 0.4s">
+        <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+          <i class="fa fa-cloud text-primary"></i>
+          空气质量
+        </h2>
+        
+        <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-16 h-16 rounded-full bg-success/20 flex items-center justify-center">
+                  <i class="fa fa-leaf text-success text-2xl"></i>
+                </div>
+                <div>
+                  <div class="text-sm text-gray-500">空气质量指数</div>
+                  <div class="flex items-baseline gap-2">
+                    <span id="aqiValue" class="text-3xl font-bold">65</span>
+                    <span id="aqiLevel" class="text-success font-medium">良好</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="space-y-4">
+                <div>
+                  <div class="flex justify-between text-sm mb-1">
+                    <span>PM2.5</span>
+                    <span id="pm25" class="font-medium">18 μg/m³</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="pm25Bar" class="bg-success h-2 rounded-full" style="width: 20%"></div>
+                  </div>
+                </div>
                 
-                if (!response.ok) {
-                    throw new Error('网络请求失败');
-                }
+                <div>
+                  <div class="flex justify-between text-sm mb-1">
+                    <span>PM10</span>
+                    <span id="pm10" class="font-medium">42 μg/m³</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="pm10Bar" class="bg-success h-2 rounded-full" style="width: 30%"></div>
+                  </div>
+                </div>
                 
-                const data = await response.json();
+                <div>
+                  <div class="flex justify-between text-sm mb-1">
+                    <span>O₃</span>
+                    <span id="o3" class="font-medium">85 μg/m³</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="o3Bar" class="bg-warning h-2 rounded-full" style="width: 40%"></div>
+                  </div>
+                </div>
                 
-                // 检查API返回的状态
-                if (data.results && data.results.length > 0) {
-                    const weatherData = data.results[0];
-                    displayWeather(weatherData);
+                <div>
+                  <div class="flex justify-between text-sm mb-1">
+                    <span>SO₂</span>
+                    <span id="so2" class="font-medium">12 μg/m³</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="so2Bar" class="bg-success h-2 rounded-full" style="width: 10%"></div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div class="flex justify-between text-sm mb-1">
+                    <span>NO₂</span>
+                    <span id="no2" class="font-medium">35 μg/m³</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="no2Bar" class="bg-success h-2 rounded-full" style="width: 25%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="font-medium text-lg mb-4">健康建议</h3>
+              <div id="healthAdvice" class="bg-light rounded-xl p-4">
+                <p class="text-gray-700">空气质量良好，适合户外活动。儿童、老年人及心脏病、呼吸系统疾病患者应减少长时间、高强度的户外锻炼。</p>
+              </div>
+              
+              <h3 class="font-medium text-lg mt-6 mb-4">空气污染物来源</h3>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="bg-light rounded-lg p-3 flex items-center gap-2">
+                  <i class="fa fa-industry text-gray-500"></i>
+                  <span class="text-sm">工业排放</span>
+                </div>
+                <div class="bg-light rounded-lg p-3 flex items-center gap-2">
+                  <i class="fa fa-car text-gray-500"></i>
+                  <span class="text-sm">汽车尾气</span>
+                </div>
+                <div class="bg-light rounded-lg p-3 flex items-center gap-2">
+                  <i class="fa fa-fire text-gray-500"></i>
+                  <span class="text-sm">燃煤污染</span>
+                </div>
+                <div class="bg-light rounded-lg p-3 flex items-center gap-2">
+                  <i class="fa fa-leaf text-gray-500"></i>
+                  <span class="text-sm">扬尘</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 生活指数 -->
+      <section class="max-w-5xl mx-auto animate-fadeIn" style="animation-delay: 0.5s">
+        <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+          <i class="fa fa-heartbeat text-primary"></i>
+          生活指数
+        </h2>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <!-- 生活指数卡片会通过JS动态生成 -->
+        </div>
+      </section>
+    </div>
+  </main>
+  
+  <!-- 页脚 -->
+  <footer class="bg-dark text-white/70 py-8">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="flex items-center gap-2 mb-4 md:mb-0">
+          <i class="fa fa-cloud text-primary text-xl"></i>
+          <span class="font-bold text-white">天气查询</span>
+        </div>
+        
+        <div class="text-sm text-center md:text-right">
+          <p>数据来源：心知天气</p>
+          <p class="mt-1">© 2023 天气查询. 保留所有权利</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- 返回顶部按钮 -->
+  <button id="backToTop" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg opacity-0 invisible transition-all duration-300">
+    <i class="fa fa-arrow-up"></i>
+  </button>
+
+  <script>
+    // DOM元素
+    const cityInput = document.getElementById('cityInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const locationBtn = document.getElementById('locationBtn');
+    const mobileLocationBtn = document.getElementById('mobileLocationBtn');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const weatherInfo = document.getElementById('weatherInfo');
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const errorMessage = document.getElementById('errorMessage');
+    const backToTop = document.getElementById('backToTop');
+    const navbar = document.getElementById('navbar');
+    const popularCities = document.querySelectorAll('.popular-city');
+    
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', () => {
+      // 默认查询北京天气
+      getWeatherData('北京');
+      
+      // 移动端菜单切换
+      mobileMenuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+      
+      // 搜索按钮点击事件
+      searchBtn.addEventListener('click', () => {
+        const city = cityInput.value.trim();
+        if (city) {
+          getWeatherData(city);
+          // 关闭移动菜单
+          mobileMenu.classList.add('hidden');
+        } else {
+          showError('请输入城市名称');
+        }
+      });
+      
+      // 回车键搜索
+      cityInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          searchBtn.click();
+        }
+      });
+      
+      // 热门城市点击
+      popularCities.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const city = btn.textContent.trim();
+          cityInput.value = city;
+          getWeatherData(city);
+          // 关闭移动菜单
+          mobileMenu.classList.add('hidden');
+        });
+      });
+      
+      // 定位按钮点击
+      locationBtn.addEventListener('click', getLocationWeather);
+      mobileLocationBtn.addEventListener('click', () => {
+        getLocationWeather();
+        mobileMenu.classList.add('hidden');
+      });
+      
+      // 滚动事件监听
+      window.addEventListener('scroll', handleScroll);
+    });
+    
+    // 处理滚动事件
+    function handleScroll() {
+      // 导航栏效果
+      if (window.scrollY > 50) {
+        navbar.classList.add('py-2', 'bg-white/95', 'backdrop-blur-sm');
+        navbar.classList.remove('py-3');
+      } else {
+        navbar.classList.add('py-3');
+        navbar.classList.remove('py-2', 'bg-white/95', 'backdrop-blur-sm');
+      }
+      
+      // 返回顶部按钮
+      if (window.scrollY > 300) {
+        backToTop.classList.remove('opacity-0', 'invisible');
+        backToTop.classList.add('opacity-100', 'visible');
+      } else {
+        backToTop.classList.add('opacity-0', 'invisible');
+        backToTop.classList.remove('opacity-100', 'visible');
+      }
+      
+      backToTop.addEventListener('click', () => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      });
+    }
+    
+    // 获取定位并查询天气
+    function getLocationWeather() {
+      if (navigator.geolocation) {
+        showLoading();
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            // 调用逆地理编码API获取城市名
+            fetch(`https://zhixin.76220726.xyz?location=${latitude},${longitude}`)
+              .then(response => response.json())
+              .then(data => {
+                if (data.results && data.results[0]) {
+                  const city = data.results[0].location.name;
+                  cityInput.value = city;
+                  getWeatherData(city);
                 } else {
-                    throw new Error('未找到该城市的天气信息');
+                  showError('无法获取您所在的城市信息');
                 }
-            } catch (err) {
-                showError(err.message);
-            } finally {
-                loading.style.display = 'none';
-            }
-        }
-        
-        // 显示天气数据
-        function displayWeather(data) {
-            const location = data.location;
-            const now = data.now;
-            
-            // 更新位置信息
-            locationName.textContent = location.name;
-            
-            // 更新温度
-            temperature.textContent = now.temperature;
-            
-            // 更新天气描述
-            weatherDescription.textContent = now.text;
-            
-            // 更新其他天气信息
-            feelsLike.textContent = `${now.feels_like}°C`;
-            humidity.textContent = `${now.humidity}%`;
-            windSpeed.textContent = `${now.wind_speed} km/h`;
-            pressure.textContent = `${now.pressure} hPa`;
-            
-            // 更新天气图标
-            updateWeatherIcon(now.code);
-            
-            // 显示天气卡片
-            weatherCard.style.display = 'block';
-        }
-        
-        // 根据天气代码更新图标
-        function updateWeatherIcon(code) {
-            // 清除之前的图标类
-            weatherIcon.className = 'weather-icon';
-            
-            // 根据天气代码设置对应的图标
-            // 这里使用心知天气的天气代码映射
-            if (code === 0 || code === 1 || code === 2) {
-                // 晴、少云、晴间多云
-                weatherIcon.innerHTML = '<i class="fas fa-sun"></i>';
-            } else if (code >= 3 && code <= 12) {
-                // 多云、阴
-                weatherIcon.innerHTML = '<i class="fas fa-cloud"></i>';
-            } else if (code >= 13 && code <= 18) {
-                // 雨
-                weatherIcon.innerHTML = '<i class="fas fa-cloud-rain"></i>';
-            } else if (code >= 19 && code <= 25) {
-                // 雪
-                weatherIcon.innerHTML = '<i class="fas fa-snowflake"></i>';
-            } else if (code >= 26 && code <= 29) {
-                // 沙尘、雾
-                weatherIcon.innerHTML = '<i class="fas fa-smog"></i>';
-            } else if (code >= 30 && code <= 32) {
-                // 风
-                weatherIcon.innerHTML = '<i class="fas fa-wind"></i>';
-            } else if (code >= 33 && code <= 37) {
-                // 冷
-                weatherIcon.innerHTML = '<i class="fas fa-temperature-low"></i>';
-            } else {
-                // 默认图标
-                weatherIcon.innerHTML = '<i class="fas fa-cloud"></i>';
-            }
-        }
-        
-        // 显示错误信息
-        function showError(message) {
-            error.textContent = `错误: ${message}`;
-            error.style.display = 'block';
-        }
-        
-        // 事件监听
-        searchBtn.addEventListener('click', () => {
-            const city = cityInput.value.trim();
-            if (city) {
-                getWeather(city);
-            }
+              })
+              .catch(err => {
+                showError('获取定位信息失败');
+                console.error(err);
+              });
+          },
+          (err) => {
+            showError('无法获取您的位置，请手动输入城市');
+            console.error(err);
+          }
+        );
+      } else {
+        showError('您的浏览器不支持地理位置定位');
+      }
+    }
+    
+    // 获取天气数据
+    function getWeatherData(city) {
+      showLoading();
+      
+      // 调用Cloudflare Workers后端接口
+      fetch(`https://zhixin.76220726.xyz?city=${encodeURIComponent(city)}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('网络响应不正常');
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.results && data.results.length > 0) {
+            renderWeatherData(data);
+            showWeatherInfo();
+          } else {
+            showError('未找到该城市的天气数据');
+          }
+        })
+        .catch(err => {
+          console.error('获取天气数据失败:', err);
+          showError('获取天气数据失败，请稍后重试');
         });
+    }
+    
+    // 渲染天气数据
+    function renderWeatherData(data) {
+      const result = data.results[0];
+      const now = result.now;
+      const location = result.location;
+      const lastUpdate = new Date(result.last_update);
+      
+      // 当前日期格式化
+      const dateOptions = { month: 'long', day: 'numeric', weekday: 'long' };
+      const currentDate = new Date().toLocaleDateString('zh-CN', dateOptions);
+      
+      // 更新时间格式化
+      const timeOptions = { hour: '2-digit', minute: '2-digit' };
+      const updateTimeStr = lastUpdate.toLocaleTimeString('zh-CN', timeOptions);
+      
+      // 更新当前天气信息
+      document.getElementById('currentCity').textContent = location.name;
+      document.getElementById('currentDate').textContent = currentDate;
+      document.getElementById('updateTime').textContent = `更新时间：${lastUpdate.toLocaleDateString()} ${updateTimeStr}`;
+      document.getElementById('currentTemp').textContent = `${now.temperature}°`;
+      document.getElementById('currentWeather').textContent = now.text;
+      document.getElementById('humidity').textContent = `${now.humidity}%`;
+      document.getElementById('windDir').textContent = now.wind_direction;
+      document.getElementById('windScale').textContent = `${now.wind_scale}级`;
+      document.getElementById('visibility').textContent = `${now.visibility}km`;
+      
+      // 设置天气图标
+      setWeatherIcon(now.text, document.getElementById('weatherIcon'));
+      
+      // 渲染未来预报（这里简化处理，实际项目中需要调用多日预报接口）
+      renderForecast();
+      
+      // 渲染空气质量（这里简化处理，实际项目中需要调用空气质量接口）
+      renderAirQuality();
+      
+      // 渲染生活指数
+      renderLifeIndices();
+    }
+    
+    // 设置天气图标
+    function setWeatherIcon(weatherText, container) {
+      let iconClass = '';
+      let iconColor = '';
+      
+      switch(weatherText) {
+        case '晴':
+          iconClass = 'fa-sun-o';
+          iconColor = 'text-accent';
+          break;
+        case '多云':
+          iconClass = 'fa-cloud';
+          iconColor = 'text-gray-500';
+          break;
+        case '阴':
+          iconClass = 'fa-cloud';
+          iconColor = 'text-gray-400';
+          break;
+        case '雨':
+        case '小雨':
+        case '中雨':
+        case '大雨':
+        case '暴雨':
+          iconClass = 'fa-tint';
+          iconColor = 'text-primary';
+          break;
+        case '雪':
+        case '小雪':
+        case '中雪':
+        case '大雪':
+        case '暴雪':
+          iconClass = 'fa-snowflake-o';
+          iconColor = 'text-secondary';
+          break;
+        case '雷阵雨':
+          iconClass = 'fa-bolt';
+          iconColor = 'text-yellow-500';
+          break;
+        case '雾':
+          iconClass = 'fa-smog';
+          iconColor = 'text-gray-400';
+          break;
+        default:
+          iconClass = 'fa-question-circle';
+          iconColor = 'text-gray-400';
+      }
+      
+      container.innerHTML = `<i class="fa ${iconClass} text-6xl ${iconColor}"></i>`;
+    }
+    
+    // 渲染未来预报
+    function renderForecast() {
+      const forecastContainer = document.querySelector('#forecast .grid');
+      forecastContainer.innerHTML = '';
+      
+      // 模拟未来7天数据
+      const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+      const weathers = ['晴', '多云', '晴', '小雨', '阴', '晴', '多云'];
+      const temps = ['26°', '28°', '30°', '25°', '23°', '24°', '27°'];
+      const lowTemps = ['18°', '19°', '20°', '17°', '16°', '15°', '18°'];
+      
+      for (let i = 0; i < 7; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() + i);
+        const day = weekdays[date.getDay()];
         
-        cityInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const city = cityInput.value.trim();
-                if (city) {
-                    getWeather(city);
-                }
-            }
-        });
+        const forecastCard = document.createElement('div');
+        forecastCard.className = 'bg-white rounded-xl shadow p-4 flex flex-col items-center text-center card-hover';
         
-        // 初始化
-        updateDate();
-        // 默认加载北京天气
-        getWeather('北京');
-    </script>
+        forecastCard.innerHTML = `
+          <div class="text-gray-500 text-sm mb-2">${i === 0 ? '今天' : day}</div>
+          <div class="weather-icon my-2">
+            <i class="fa ${getWeatherIconClass(weathers[i])} text-2xl ${getWeatherIconColor(weathers[i])}"></i>
+          </div>
+          <div class="text-sm mb-1">${weathers[i]}</div>
+          <div class="text-xs text-gray-500">${lowTemps[i]} ~ ${temps[i]}</div>
+        `;
+        
+        forecastContainer.appendChild(forecastCard);
+      }
+    }
+    
+    // 获取天气图标类名
+    function getWeatherIconClass(weatherText) {
+      switch(weatherText) {
+        case '晴': return 'fa-sun-o';
+        case '多云': return 'fa-cloud';
+        case '阴': return 'fa-cloud';
+        case '雨':
+        case '小雨':
+        case '中雨':
+        case '大雨':
+        case '暴雨': return 'fa-tint';
+        case '雪':
+        case '小雪':
+        case '中雪':
+        case '大雪':
+        case '暴雪': return 'fa-snowflake-o';
+        case '雷阵雨': return 'fa-bolt';
+        case '雾': return 'fa-smog';
+        default: return 'fa-question-circle';
+      }
+    }
+    
+    // 获取天气图标颜色
+    function getWeatherIconColor(weatherText) {
+      switch(weatherText) {
+        case '晴': return 'text-accent';
+        case '多云':
+        case '阴': return 'text-gray-500';
+        case '雨':
+        case '小雨':
+        case '中雨':
+        case '大雨':
+        case '暴雨': return 'text-primary';
+        case '雪':
+        case '小雪':
+        case '中雪':
+        case '大雪':
+        case '暴雪': return 'text-secondary';
+        case '雷阵雨': return 'text-yellow-500';
+        case '雾': return 'text-gray-400';
+        default: return 'text-gray-400';
+      }
+    }
+    
+    // 渲染空气质量
+    function renderAirQuality() {
+      // 模拟空气质量数据
+      const aqi = 65;
+      let aqiLevel = '';
+      let aqiColor = '';
+      
+      if (aqi <= 50) {
+        aqiLevel = '优';
+        aqiColor = 'text-success';
+      } else if (aqi <= 100) {
+        aqiLevel = '良好';
+        aqiColor = 'text-success';
+      } else if (aqi <= 150) {
+        aqiLevel = '轻度污染';
+        aqiColor = 'text-warning';
+      } else if (aqi <= 200) {
+        aqiLevel = '中度污染';
+        aqiColor = 'text-warning';
+      } else if (aqi <= 300) {
+        aqiLevel = '重度污染';
+        aqiColor = 'text-danger';
+      } else {
+        aqiLevel = '严重污染';
+        aqiColor = 'text-danger';
+      }
+      
+      document.getElementById('aqiValue').textContent = aqi;
+      document.getElementById('aqiLevel').textContent = aqiLevel;
+      document.getElementById('aqiLevel').className = `font-medium ${aqiColor}`;
+      
+      // 设置污染物数据
+      document.getElementById('pm25').textContent = '18 μg/m³';
+      document.getElementById('pm25Bar').style.width = '20%';
+      document.getElementById('pm10').textContent = '42 μg/m³';
+      document.getElementById('pm10Bar').style.width = '30%';
+      document.getElementById('o3').textContent = '85 μg/m³';
+      document.getElementById('o3Bar').style.width = '40%';
+      document.getElementById('so2').textContent = '12 μg/m³';
+      document.getElementById('so2Bar').style.width = '10%';
+      document.getElementById('no2').textContent = '35 μg/m³';
+      document.getElementById('no2Bar').style.width = '25%';
+      
+      // 设置健康建议
+      let advice = '';
+      if (aqi <= 100) {
+        advice = '空气质量良好，适合户外活动。儿童、老年人及心脏病、呼吸系统疾病患者应减少长时间、高强度的户外锻炼。';
+      } else if (aqi <= 200) {
+        advice = '空气质量不佳，敏感人群应减少户外活动。一般人群适量减少户外运动。';
+      } else {
+        advice = '空气质量较差，建议尽量减少外出。老人、儿童和患有心脏病、肺病的患者应留在室内，停止户外运动。';
+      }
+      document.getElementById('healthAdvice').innerHTML = `<p class="text-gray-700">${advice}</p>`;
+    }
+    
+    // 渲染生活指数
+    function renderLifeIndices() {
+      const indicesContainer = document.querySelector('.grid:last-of-type');
+      indicesContainer.innerHTML = '';
+      
+      // 生活指数数据
+      const indices = [
+        { name: '紫外线', value: '中等', icon: 'fa-sun-o', color: 'text-accent' },
+        { name: '洗车', value: '适宜', icon: 'fa-car', color: 'text-success' },
+        { name: '穿衣', value: '舒适', icon: 'fa-shopping-bag', color: 'text-primary' },
+        { name: '感冒', value: '少发', icon: 'fa-medkit', color: 'text-success' },
+        { name: '运动', value: '适宜', icon: 'fa-futbol-o', color: 'text-success' },
+        { name: '钓鱼', value: '适宜', icon: 'fa-anchor', color: 'text-primary' }
+      ];
+      
+      indices.forEach(index => {
+        const indexCard = document.createElement('div');
+        indexCard.className = 'bg-white rounded-xl shadow p-4 flex flex-col items-center text-center card-hover';
+        
+        indexCard.innerHTML = `
+          <i class="fa ${index.icon} ${index.color} text-xl mb-3"></i>
+          <div class="text-sm font-medium mb-1">${index.name}</div>
+          <div class="text-xs text-gray-500">${index.value}</div>
+        `;
+        
+        indicesContainer.appendChild(indexCard);
+      });
+    }
+    
+    // 显示加载状态
+    function showLoading() {
+      weatherInfo.classList.add('hidden');
+      error.classList.add('hidden');
+      loading.classList.remove('hidden');
+    }
+    
+    // 显示天气信息
+    function showWeatherInfo() {
+      loading.classList.add('hidden');
+      error.classList.add('hidden');
+      weatherInfo.classList.remove('hidden');
+      
+      // 滚动到天气信息区域
+      weatherInfo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    // 显示错误信息
+    function showError(msg) {
+      loading.classList.add('hidden');
+      weatherInfo.classList.add('hidden');
+      errorMessage.textContent = msg;
+      error.classList.remove('hidden');
+    }
+  </script>
 </body>
 </html>
+
